@@ -180,3 +180,28 @@ dat %>% ggplot(aes(HR_per_game, R_per_game)) +
   geom_point(alpha = 0.5) +
   geom_smooth(method = "lm") +
   facet_wrap( ~ BB_strata)
+
+
+#linear regression
+fit <- lm(son ~ father, data = galton_heights)
+summary(fit)
+
+
+# Monte Carlo simulation
+B <- 1000
+N <- 50
+lse <- replicate(B, {
+  sample_n(galton_heights, N, replace = TRUE) %>%
+    lm(son ~ father, data = .) %>%
+    .$coef
+})
+lse <- data.frame(beta_0 = lse[1, ], beta_1 = lse[2, ])
+
+lse %>% summarize(cor(beta_0, beta_1))
+
+lse <- replicate(B, {
+  sample_n(galton_heights, N, replace = TRUE) %>%
+    mutate(father = father - mean(father)) %>%
+    lm(son ~ father, data = .) %>% .$coef
+})
+
